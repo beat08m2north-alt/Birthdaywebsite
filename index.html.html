@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday, Zainab</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #0a0a0a;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: white;
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .ui-layer {
+            position: relative;
+            z-index: 10;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 100%);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 3rem;
+            max-width: 90%;
+            width: 500px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .wish-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            line-height: 1.2;
+            opacity: 0;
+            display: none;
+            background: linear-gradient(to right, #ff758c, #ff7eb3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-celebrate {
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            padding: 1.25rem 2.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(255, 65, 108, 0.3);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-celebrate:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(255, 65, 108, 0.5);
+        }
+
+        .btn-celebrate:active {
+            transform: translateY(0);
+        }
+
+        .sub-text {
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+
+    <div class="ui-layer">
+        <div class="glass-card" id="main-card">
+            <div id="intro-content">
+                <h2 class="text-3xl font-light mb-2">Today is special.</h2>
+                <p class="sub-text">Because the world became brighter the day you arrived.</p>
+                <button class="btn-celebrate" id="celebrateBtn">CELEBRATE YOU</button>
+            </div>
+            <h1 class="wish-text" id="finalWish">Happy birthday, my Zainab!</h1>
+        </div>
+    </div>
+
+    <script>
+        // --- THREE.JS BACKGROUND ---
+        let scene, camera, renderer, hearts = [];
+
+        function initThree() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // Create Heart Shape
+            const x = 0, y = 0;
+            const heartShape = new THREE.Shape();
+            heartShape.moveTo( x + 5, y + 5 );
+            heartShape.bezierCurveTo( x + 5, y + 5, x + 4, y, x, y );
+            heartShape.bezierCurveTo( x - 6, y, x - 6, y + 7,x - 6, y + 7 );
+            heartShape.bezierCurveTo( x - 6, y + 11, x - 3, y + 15.4, x + 5, y + 19 );
+            heartShape.bezierCurveTo( x + 12, y + 15.4, x + 16, y + 11, x + 16, y + 7 );
+            heartShape.bezierCurveTo( x + 16, y + 7, x + 16, y, x + 10, y );
+            heartShape.bezierCurveTo( x + 7, y, x + 5, y + 5, x + 5, y + 5 );
+
+            const geometry = new THREE.ExtrudeGeometry(heartShape, { depth: 2, bevelEnabled: true, bevelThickness: 1, bevelSize: 1 });
+            
+            // Add many hearts
+            for(let i = 0; i < 40; i++) {
+                const material = new THREE.MeshPhongMaterial({ 
+                    color: Math.random() > 0.5 ? 0xff416c : 0xff7eb3,
+                    shininess: 100
+                });
+                const heart = new THREE.Mesh(geometry, material);
+                
+                heart.position.set(
+                    (Math.random() - 0.5) * 100,
+                    (Math.random() - 0.5) * 100,
+                    (Math.random() - 0.5) * 50
+                );
+                heart.rotation.x = Math.PI;
+                heart.rotation.z = Math.random() * Math.PI;
+                heart.scale.set(0.2, 0.2, 0.2);
+                
+                scene.add(heart);
+                hearts.push(heart);
+            }
+
+            const light = new THREE.PointLight(0xffffff, 1, 100);
+            light.position.set(0, 0, 10);
+            scene.add(light);
+            scene.add(new THREE.AmbientLight(0x404040));
+
+            camera.position.z = 50;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            hearts.forEach(h => {
+                h.rotation.y += 0.01;
+                h.position.y += 0.05;
+                if(h.position.y > 50) h.position.y = -50;
+            });
+            renderer.render(scene, camera);
+        }
+
+        // --- CELEBRATION SEQUENCE ---
+        const btn = document.getElementById('celebrateBtn');
+        const intro = document.getElementById('intro-content');
+        const finalWish = document.getElementById('finalWish');
+
+        btn.addEventListener('click', () => {
+            // 1. Disable & Fade Out Button
+            btn.disabled = true;
+            gsap.to(intro, { opacity: 0, duration: 0.8, onComplete: () => {
+                intro.style.display = 'none';
+                
+                // 2. Show Final Wish
+                finalWish.style.display = 'block';
+                gsap.fromTo(finalWish, 
+                    { opacity: 0, y: 50 }, 
+                    { opacity: 1, y: 0, duration: 1.5, ease: "power4.out" }
+                );
+            }});
+
+            // 3. Confetti Explosion
+            const duration = 5 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            const randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) return clearInterval(interval);
+
+                const particleCount = 50 * (timeLeft / duration);
+                
+                // Side bursts
+                confetti({ ...defaults, particleCount, origin: { x: 0, y: 1 } });
+                confetti({ ...defaults, particleCount, origin: { x: 1, y: 1 } });
+                
+                // Emoji hearts
+                confetti({
+                    particleCount: 2,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    shapes: ['circle'], // Placeholder for logic
+                    colors: ['#ff0000', '#ff69b4']
+                });
+            }, 250);
+
+            // 4. Heart Animation Out
+            hearts.forEach((h, i) => {
+                gsap.to(h.position, {
+                    x: h.position.x * 5,
+                    y: 100,
+                    z: h.position.z - 50,
+                    duration: 3,
+                    delay: i * 0.02,
+                    ease: "power2.in"
+                });
+                gsap.to(h.material, { opacity: 0, duration: 3 });
+            });
+        });
+
+        // Handle Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        initThree();
+        animate();
+    </script>
+</body>
+</html>
